@@ -19,7 +19,7 @@ def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
                 
                 # Aplicar transparencia
                 logo = logo.copy()
-                logo.putalpha(int(255 * 0.10))  # 10% de opacidad
+                logo.putalpha(int(255 * 0.15))  # 10% de opacidad
                 
                 # Combinar la imagen con el logo centrado
                 img.paste(logo, (0, 0), logo)
@@ -38,9 +38,23 @@ def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
         img.save(ruta_salida)
     print(f"Imagen guardada en: {ruta_salida}")
 
+# Función para seleccionar la carpeta
+def seleccionar_carpeta():
+    global carpeta
+    carpeta = filedialog.askdirectory(title="Selecciona la carpeta con las fotos")
+    if carpeta:
+        print(f"Carpeta seleccionada: {carpeta}")
+        verificar_entrada()
+
+# Función para verificar la entrada
+def verificar_entrada():
+    if entry_referencia.get() and carpeta:
+        button_procesar.config(state="normal")
+    else:
+        button_procesar.config(state="disabled")
+
 # Función para procesar las imágenes en la carpeta
 def procesar_imagenes():
-    carpeta = filedialog.askdirectory(title="Selecciona la carpeta con las fotos")
     if not carpeta:
         print("No se seleccionó ninguna carpeta.")
         return
@@ -99,8 +113,12 @@ label_referencia.pack()
 
 entry_referencia = ttk.Entry(root)
 entry_referencia.pack(pady=5)
+entry_referencia.bind("<KeyRelease>", lambda event: verificar_entrada())
 
-button_procesar = ttk.Button(root, text="Seleccionar Carpeta", command=procesar_imagenes)
+button_seleccionar_carpeta = ttk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+button_seleccionar_carpeta.pack(pady=10)
+
+button_procesar = ttk.Button(root, text="Procesar Imágenes", command=procesar_imagenes, state="disabled")
 button_procesar.pack(pady=10)
 
 button_salir = ttk.Button(root, text="Salir", command=salir)
