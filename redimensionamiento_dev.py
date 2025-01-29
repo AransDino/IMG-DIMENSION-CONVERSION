@@ -116,13 +116,19 @@ def procesar_imagenes():
         print("Error: No se ingresó referencia.")
         return
 
+    # Obtener los valores de ancho y alto ingresados por el usuario
+    try:
+        ancho = int(entry_ancho.get())
+        alto = int(entry_alto.get())
+    except ValueError:
+        messagebox.showerror("Error", "Debes ingresar valores numéricos para el ancho y el alto")
+        print("Error: Valores de ancho y alto no válidos.")
+        return
+
     # Crear la carpeta de salida dentro de la carpeta seleccionada
     carpeta_salida = os.path.join(carpeta, "FOTOS REDIMENSIONADAS")
     os.makedirs(carpeta_salida, exist_ok=True)
     print(f"Carpeta de salida creada: {carpeta_salida}")
-
-    ancho = 1366  # Nueva resolución
-    alto = 1025   # Nueva resolución
 
     # Añadir encabezado para los archivos procesados
     tree.insert("", "end", values=("Archivos procesados", ""), tags=("header",))
@@ -164,7 +170,7 @@ def salir():
 # Crear la interfaz gráfica
 root = Tk()
 root.title("Redimensionador de Imágenes")
-root.geometry("600x850")
+root.geometry("800x800")  # Change dimensions to 800x800
 
 # Estilo (simulando Tailwind con ttkthemes)
 style = ttk.Style()
@@ -176,21 +182,46 @@ style.configure("TEntry", padding=6, relief="flat", background="#E5E7EB", foregr
 label_instrucciones = ttk.Label(root, text="Introduce una referencia y selecciona la carpeta:")
 label_instrucciones.pack(pady=10)
 
-label_referencia = ttk.Label(root, text="Referencia:")
-label_referencia.pack()
+frame_inputs = ttk.Frame(root)
+frame_inputs.pack(pady=5, fill="x")
 
-entry_referencia = ttk.Entry(root)
-entry_referencia.pack(pady=5)
+frame_ancho_alto = ttk.Frame(frame_inputs, width=240, relief="solid", borderwidth=1)  # 30% of 800px with border
+frame_ancho_alto.grid(row=0, column=0, padx=5, sticky="w")
+
+label_ancho = ttk.Label(frame_ancho_alto, text="Ancho:")
+label_ancho.grid(row=0, column=0, padx=5)
+
+entry_ancho = ttk.Entry(frame_ancho_alto)
+entry_ancho.grid(row=0, column=1, padx=5)
+entry_ancho.insert(0, "1366")  # Valor por defecto
+
+label_alto = ttk.Label(frame_ancho_alto, text="Alto:")
+label_alto.grid(row=1, column=0, padx=5)
+
+entry_alto = ttk.Entry(frame_ancho_alto)
+entry_alto.grid(row=1, column=1, padx=5)
+entry_alto.insert(0, "1025")  # Valor por defecto
+
+frame_referencia_botones = ttk.Frame(frame_inputs, width=560, relief="solid", borderwidth=1)  # 70% of 800px with border
+frame_referencia_botones.grid(row=0, column=1, padx=5, sticky="w")
+
+frame_referencia_botones.columnconfigure(0, weight=1)
+
+label_referencia = ttk.Label(frame_referencia_botones, text="Referencia:")
+label_referencia.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+
+entry_referencia = ttk.Entry(frame_referencia_botones)
+entry_referencia.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 entry_referencia.bind("<KeyRelease>", lambda event: verificar_entrada())
 
-button_seleccionar_carpeta = ttk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
-button_seleccionar_carpeta.pack(pady=10)
+button_seleccionar_carpeta = ttk.Button(frame_referencia_botones, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+button_seleccionar_carpeta.grid(row=1, column=0, padx=5, pady=5, columnspan=2, sticky="ew")
 
-button_listar = ttk.Button(root, text="Listar Archivos", command=listar_archivos, state="disabled")
-button_listar.pack(pady=10)
+button_listar = ttk.Button(frame_referencia_botones, text="Listar Archivos", command=listar_archivos, state="disabled")
+button_listar.grid(row=2, column=0, padx=5, pady=5, columnspan=2, sticky="ew")
 
-button_procesar = ttk.Button(root, text="Procesar Imágenes", command=procesar_imagenes, state="disabled")
-button_procesar.pack(pady=10)
+button_procesar = ttk.Button(frame_referencia_botones, text="Procesar Imágenes", command=procesar_imagenes, state="disabled")
+button_procesar.grid(row=3, column=0, padx=5, pady=5, columnspan=2, sticky="ew")
 
 button_salir = ttk.Button(root, text="Salir", command=salir)
 button_salir.pack(pady=10)
