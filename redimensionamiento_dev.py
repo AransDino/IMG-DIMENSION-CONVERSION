@@ -6,7 +6,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Función para redimensionar las imágenes y agregar marca de agua y texto
 def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
-    print(f"Redimensionando imagen: {ruta_imagen} a {ancho}x{alto}")
+    mensaje = f"Redimensionando imagen: {ruta_imagen} a {ancho}x{alto}"
+    print(mensaje)
+    actualizar_grid_detalles(mensaje)
     with Image.open(ruta_imagen) as img:
         img = img.resize((ancho, alto), Image.LANCZOS)
         
@@ -23,9 +25,13 @@ def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
                 
                 # Combinar la imagen con el logo centrado
                 img.paste(logo, (0, 0), logo)
-                print("Marca de agua agregada correctamente en el centro.")
+                mensaje = "Marca de agua agregada correctamente en el centro."
+                print(mensaje)
+                actualizar_grid_detalles(mensaje)
         except Exception as e:
-            print(f"Error al agregar la marca de agua: {e}")
+            mensaje = f"Error al agregar la marca de agua: {e}"
+            print(mensaje)
+            actualizar_grid_detalles(mensaje)
         
         # Agregar texto en la parte inferior con un tamaño de fuente más grande
         draw = ImageDraw.Draw(img)
@@ -36,7 +42,9 @@ def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
         draw.text(position, texto, fill="white", font=font)
         
         img.save(ruta_salida)
-    print(f"Imagen guardada en: {ruta_salida}")
+    mensaje = f"Imagen guardada en: {ruta_salida}"
+    print(mensaje)
+    actualizar_grid_detalles(mensaje)
 
 # Función para seleccionar la carpeta
 def seleccionar_carpeta():
@@ -63,11 +71,13 @@ def actualizar_estadisticas():
     total_procesadas = len(os.listdir(carpeta_salida)) if os.path.exists(carpeta_salida) else 0
     label_total_original.config(text=f"Imágenes a procesar: {total_original}")
     label_total_procesadas.config(text=f"Total imágenes procesadas: {total_procesadas}")
-    root.update_idletasks()  # Actualizar la ventana
+    root.update()  # Actualizar la ventana
 
 # Función para actualizar el grid con la información de las imágenes procesadas
 def actualizar_grid(archivo, estado):
     tree.insert("", "end", values=(archivo, estado))
+    tree.yview_moveto(1)  # Hace que el Treeview haga scroll automático
+    root.update()  # Asegura que la UI se refresque completamente
 
 # Función para actualizar el grid con la información inicial de las imágenes en la carpeta
 def actualizar_grid_inicial():
@@ -86,6 +96,12 @@ def actualizar_grid_inicial():
 # Función para listar los archivos en el grid
 def listar_archivos():
     actualizar_grid_inicial()
+
+# Función para actualizar el grid de detalles del procesamiento
+def actualizar_grid_detalles(mensaje):
+    tree_detalles.insert("", "end", values=(mensaje,))
+    tree_detalles.yview_moveto(1)  # Scroll automático
+    root.update()  # Actualizar la ventana
 
 # Función para procesar las imágenes en la carpeta
 def procesar_imagenes():
@@ -117,35 +133,29 @@ def procesar_imagenes():
             ruta_imagen = os.path.join(carpeta, archivo)
             nombre_nuevo = f"{referencia}_{numerador}.jpg"
             ruta_salida = os.path.join(carpeta_salida, nombre_nuevo)
-            print(f"Procesando archivo: {archivo} -> {nombre_nuevo}")
+            mensaje = f"Procesando archivo: {archivo} -> {nombre_nuevo}"
+            print(mensaje)
+            actualizar_grid_detalles(mensaje)
             try:
                 redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia)
                 actualizar_grid(archivo, "Procesado")
             except Exception as e:
                 actualizar_grid(archivo, f"Error: {e}")
+                mensaje = f"Error al procesar la imagen: {e}"
+                print(mensaje)
+                actualizar_grid_detalles(mensaje)
             numerador += 1
             actualizar_estadisticas()
 
-    print("Proceso completado. Todas las imágenes han sido procesadas.")
-    messagebox.showinfo("Completado", "Todas las imágenes han sido procesadas y guardadas en 'FOTOS REDIMENSIONADAS'.")
+    mensaje = "Proceso completado. Todas las imágenes han sido procesadas."
+    print(mensaje)
+    actualizar_grid_detalles(mensaje)
+    messagebox.showinfo("Completado", mensaje)
     # Abrir el explorador de archivos en la carpeta de salida
     subprocess.Popen(f'explorer /select,"{carpeta_salida}"')
-    print(f"Explorador de archivos abierto en: {carpeta_salida}")
-
-    # Presentar el estado de las conversiones en formato de tabla
-    presentar_estado_conversiones()
-
-# Función para presentar el estado de las conversiones en formato de tabla
-def presentar_estado_conversiones():
-    # Limpiar el grid
-    for item in tree.get_children():
-        tree.delete(item)
-    # Añadir encabezado para el estado de las conversiones
-    tree.insert("", "end", values=("Archivo", "Estado"), tags=("header",))
-    # Añadir información del estado de las conversiones
-    for archivo in os.listdir(carpeta_salida):
-        estado = "Procesado"
-        actualizar_grid(archivo, estado)
+    mensaje = f"Explorador de archivos abierto en: {carpeta_salida}"
+    print(mensaje)
+    actualizar_grid_detalles(mensaje)
 
 # Función para salir de la aplicación
 def salir():
@@ -154,7 +164,7 @@ def salir():
 # Crear la interfaz gráfica
 root = Tk()
 root.title("Redimensionador de Imágenes")
-root.geometry("600x800")
+root.geometry("600x850")
 
 # Estilo (simulando Tailwind con ttkthemes)
 style = ttk.Style()
@@ -182,6 +192,9 @@ button_listar.pack(pady=10)
 button_procesar = ttk.Button(root, text="Procesar Imágenes", command=procesar_imagenes, state="disabled")
 button_procesar.pack(pady=10)
 
+button_salir = ttk.Button(root, text="Salir", command=salir)
+button_salir.pack(pady=10)
+
 label_total_original = ttk.Label(root, text="Imágenes a procesar: 0")
 label_total_original.pack(pady=5)
 
@@ -189,14 +202,35 @@ label_total_procesadas = ttk.Label(root, text="Total imágenes procesadas: 0")
 label_total_procesadas.pack(pady=5)
 
 # Crear el Treeview para mostrar la información de las imágenes procesadas
-tree = ttk.Treeview(root, columns=("Archivo", "Estado"), show="headings")
-tree.heading("Archivo", text="Archivo")
-tree.heading("Estado", text="Estado")
+frame_tree = ttk.Frame(root)
+frame_tree.pack(pady=10, fill="both", expand=True)
+
+tree_scroll = ttk.Scrollbar(frame_tree)
+tree_scroll.pack(side="right", fill="y")
+
+tree = ttk.Treeview(frame_tree, columns=("Archivo", "Estado"), show="headings", yscrollcommand=tree_scroll.set)
+tree.heading("Archivo", text="Archivo", anchor="w")
+tree.heading("Estado", text="Estado", anchor="w")
+tree.column("Archivo", width=200, stretch=True)
+tree.column("Estado", width=100, stretch=True)
 tree.tag_configure("header", background="#D3D3D3", font=("Helvetica", 10, "bold"))
 tree.pack(pady=10, fill="both", expand=True)
 
-button_salir = ttk.Button(root, text="Salir", command=salir)
-button_salir.pack(pady=10)
+tree_scroll.config(command=tree.yview)
+
+# Crear el Treeview para mostrar la información detallada del procesamiento
+frame_tree_detalles = ttk.Frame(root)
+frame_tree_detalles.pack(pady=10, fill="both", expand=True)
+
+tree_detalles_scroll = ttk.Scrollbar(frame_tree_detalles)
+tree_detalles_scroll.pack(side="right", fill="y")
+
+tree_detalles = ttk.Treeview(frame_tree_detalles, columns=("Mensaje",), show="headings", yscrollcommand=tree_detalles_scroll.set)
+tree_detalles.heading("Mensaje", text="Mensaje", anchor="w")
+tree_detalles.column("Mensaje", width=400, stretch=True)
+tree_detalles.pack(pady=10, fill="both", expand=True)
+
+tree_detalles_scroll.config(command=tree_detalles.yview)
 
 # Ejecutar la aplicación
 print("Iniciando aplicación...")
