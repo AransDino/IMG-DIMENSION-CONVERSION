@@ -3,6 +3,10 @@ import subprocess  # Import the subprocess module to run system commands
 from tkinter import Tk, Label, Entry, Button, filedialog, messagebox  # Import tkinter modules for GUI
 from tkinter import ttk  # Import ttk for themed widgets
 from PIL import Image, ImageDraw, ImageFont  # Import PIL modules for image processing
+import pkg_resources  # Import pkg_resources to access package resources
+
+# Obtener la ruta absoluta del directorio del script
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Function to resize images and add watermark and text
 def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
@@ -14,7 +18,7 @@ def redimensionar_imagen(ruta_imagen, ancho, alto, ruta_salida, referencia):
         
         # Add watermark with a centered image
         try:
-            ruta_logo = "logo.png"  # Ensure the logo is in the same directory
+            ruta_logo = pkg_resources.resource_filename(__name__, "assets/logo.png")  # Access the logo from the package
             with Image.open(ruta_logo).convert("RGBA") as logo:  # Open the logo file and convert to RGBA
                 logo = logo.resize((ancho, alto), Image.LANCZOS)  # Resize the logo to match the image size
                 logo = logo.copy()  # Create a copy of the logo
