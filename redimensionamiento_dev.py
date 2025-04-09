@@ -194,7 +194,7 @@ label_ancho.grid(row=0, column=0, padx=5)  # Grid the label with padding
 
 entry_ancho = ttk.Entry(frame_ancho_alto)  # Create an entry for the width input
 entry_ancho.grid(row=0, column=1, padx=5)  # Grid the entry with padding
-entry_ancho.insert(0, "1366")  # Set a default value for the width
+entry_ancho.insert(0, "1666")  # Set a default value for the width
 
 label_alto = ttk.Label(frame_ancho_alto, text="Alto:")  # Create a label for the height input
 label_alto.grid(row=1, column=0, padx=5)  # Grid the label with padding
